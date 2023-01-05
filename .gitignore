@@ -1,6 +1,9 @@
 # Ignore large input data files
 input_data/
 
+# Ignore archived files
+previous_versions/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
