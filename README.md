@@ -1,2 +1,2 @@
 # predict-aqi
-Predicts Air Quality Index (AQI) using Ada Boost and Random Forest regression models
+Predicts Air Quality Index (AQI) for future dates using a Long Short-Term Memory (LSTM) neural network
