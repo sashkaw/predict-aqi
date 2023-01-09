@@ -1,7 +1,7 @@
-# Ignore large input data files
-input_data/
+# Node packages
+node_modules/
 
-# Ignore archived files
+# Archived files
 previous_versions/
 
 # Byte-compiled / optimized / DLL files
