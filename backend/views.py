@@ -1,23 +1,23 @@
+# IMPORTS
 import numpy as np
 import pandas as pd
 import requests
 from time import mktime
 from datetime import datetime, timedelta
-from sklearn.preprocessing import MinMaxScaler
+import aqi as AQIConverter
 from .apps import *
 from django.conf import settings
-from django.shortcuts import render
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-# Constants
-
+# CONSTANTS
+# URL for external API call
 WEATHER_API_URL = 'https://api.openweathermap.org/data/2.5/air_pollution/history'
-#WEATHER_API_URL = 'http://api.openweathermap.org/data/2.5/air_pollution'
+# Batch size for model prediction
+BATCH_SIZE = 32
 
-# Helper functions
-
+# HELPER FUNCTIONS
 # Transform time series to stationary:
 # Create a differenced series to remove any increasing trend
 def difference(dataset, interval=1):
@@ -30,73 +30,68 @@ def difference(dataset, interval=1):
 
     return pd.Series(diff)
 
-# Scale data to [-1, 1]
-def scale(data, scaler):
-    # transform data (possibly not needed for 1d timeseries)
-    data = data.reshape(data.shape[0], data.shape[1])
-    data_scaled = scaler.transform(data)
+# Difference and scale data to [-1, 1]
+def diff_scale(data, scaler):
+    # Difference the data to remove any long term trend
+    data_diff = difference(data)
+    # Slice array to ignore first element (null) and convert to 2-D numpy array for scaler
+    data_diff = np.array([data_diff[1:]])
+    # Reshape into array for scaler (observatons, features)
+    data_diff = data_diff.reshape(data_diff.shape[0], data_diff.shape[1])
+    # Scale the data
+    diff_scaled = scaler.transform(data_diff)
 
-    return data_scaled
+    return diff_scaled
  
-# inverse scaling for a forecasted value
-def invert_scale(scaler, yhat):
+# Invert scaling and remove differencing for a forecasted value
+def invert_scale_diff(yhat, prev, scaler):
+    # Wrap forecasted value in numpy array and reshape for scaler
     array = np.array(yhat)
     array = array.reshape(1, len(array))
+    # Invert scaling 
     inverted = scaler.inverse_transform(array)
-    return inverted[0, 0]
+    inverted_val = inverted[0, 0]
+    # Add the previous value to the forecasted value to remove differencing
+    inverted_rm_diff = inverted_val + prev
+
+    return inverted_rm_diff
 
 def forecast_aqi(X):
     '''
     Transform input air quality time series data and forecast future air quality.
 
     Parameters:
-    X --- list of numeric air quality time series data
+    X --- list of numeric air quality time series data (eg [1.2, 5.0])
 
     Return:
-    forecast --- forecasted air quality in numeric format
-    '''
-
-    # Difference data to remove trends
-    X_diff = difference(X)
-
-    # Define batch size for model prediction
-    batch_size = 4
+    forecast_aqi --- forecasted air quality in numeric format
+    ''' 
 
     # Get data scaler that was loaded on app start
     # This scaler will transform the data between -1 and 1
-    #scaler = BackendConfig.scaler
+    scaler = BackendConfig.scaler
 
-    # Scale the differenced data
-    #aqi_scaled = scale(X_diff[1])
+    # Difference and scale the data
+    X_scaled = diff_scale(data=X, scaler=scaler)
     
     # Get LSTM model that was loaded on app start
-    #model = BackendConfig.model
-    # Fit and evaluate model
-    #X_trimmed = aqi_scaled[1]
-
-    # Reshape
-    #reshaped = X_trimmed.reshape(len(X_trimmed), 1, 1)
+    model = BackendConfig.model
     
-    # Forecast dataset
-    #output = model.predict(reshaped, batch_size=batch_size)
+    # Generate forecast
+    yhat = model.predict(X_scaled, batch_size=BATCH_SIZE)
+    #print("yhat: ", yhat)
 
     # Invert data transforms on forecast
-    #yhat = output[0]
+    forecast_pm2_5 = invert_scale_diff(yhat=yhat, prev=X[1], scaler=scaler)
 
-    # Invert scaling
-    #yhat = invert_scale(scaler, X[1], yhat)
+    # Convert PM2.5 forecast to Intermediate AQI using the US EPA method
+    # (Intermediate means calculated from a single pollutant)
+    aqi_forecast = AQIConverter.to_iaqi(AQIConverter.POLLUTANT_PM25, str(forecast_pm2_5), algo=AQIConverter.ALGO_EPA)
 
-    # invert differencing
-    #yhat = yhat + X[1]
-
-    # store forecast
-    #forecast = yhat
-
-    #return forecast
-    return X_diff[1]
+    return aqi_forecast
     
 
-# Create your views here.
+# VIEWS
 class Prediction(APIView):
     '''
     Get current air quality data from external api and forecast future air quality.
@@ -161,25 +156,21 @@ class Prediction(APIView):
         '''
 
         # Get current air quality data
-        current_aqi = self.fetch_current_data()
+        current_pm2_5 = self.fetch_current_data()
 
-        if(current_aqi != -1):
-        
-            #print(current_aqi)
-            forecast = forecast_aqi(current_aqi)
+        # If we got valid data
+        if(current_pm2_5 != -1):
+            # Convert current PM2.5 value to Intermediate AQI using the US EPA method
+            # (Intermediate means calculated from a single pollutant)
+            aqi_current = AQIConverter.to_iaqi(AQIConverter.POLLUTANT_PM25, str(current_pm2_5[1]), algo=AQIConverter.ALGO_EPA)
+            #print(aqi_current)
 
-            # Difference data to remove trend, 
-            # scale between [-1, 1],
-            # make prediction for next air quality value
-            # using the LSTM model,
-            # invert the scaling and differencing of the output
-            # to match the input data format
-            #forecast_aqi = forecast_aqi(current_aqi)
-            
-            # Make prediction based on current air quality
-            #prediction = lstm_model.predict(np.array([[current_aqi]]))
+            # Generate Intermediate AQI forecast based on current
+            aqi_forecast = forecast_aqi(current_pm2_5)
+
             context = {
-                'data': forecast,
+                'current_aqi': aqi_current,
+                'forecast_aqi': aqi_forecast,
                 }
 
             return Response(context, status=status.HTTP_200_OK)
