@@ -21,6 +21,6 @@ class CalcNowCast(TestCase):
         self.expected = 13/3
 
     def test_nowcast(self):
-        result = now_cast_pm(self.data)
+        result = nowcast_pm(self.data)
         self.assertEqual(result, self.expected)
 

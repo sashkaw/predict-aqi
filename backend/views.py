@@ -21,6 +21,8 @@ NOWCAST_WINDOW = 12
 # Time steps for model
 STEPS_IN = 24
 STEPS_OUT = 12
+# Number of time steps for differencing
+DIFFERENCE_INTERVAL = 1
 
 # VIEWS
 class Prediction(APIView):
@@ -43,9 +45,10 @@ class Prediction(APIView):
 
         # Get the most recent hour, on the dot
         d2 = datetime.now().replace(microsecond=0, second=0, minute=0)
-        one_hr = timedelta(hours=1)
-        # Get one hour before the most recent hour
-        d1 = d2 - one_hr
+        # Need to get extra data in advance so when we apply NowCast calc we don't end up with nulls
+        prev_ts = timedelta(hours=STEPS_IN + NOWCAST_WINDOW - 1)
+        # Get time steps before the previous hour
+        d1 = d2 - prev_ts
         # Convert to unix time for API call
         d1_unix = int(mktime(d1.timetuple()))
         d2_unix = int(mktime(d2.timetuple()))
@@ -71,8 +74,6 @@ class Prediction(APIView):
                 current_val = item.get('components', {}).get('pm2_5', None)
                 time_series.append(current_val)
 
-            #print(time_series)
-            #time_series_formatted = np.array(timeseries.reshape(1, len(time))
             return time_series
         except:
             return -1
@@ -92,16 +93,32 @@ class Prediction(APIView):
 
         # If we got valid data
         if(current_pm2_5 != -1):
-            # Convert current PM2.5 value to Intermediate AQI using the US EPA method
-            # (Intermediate means calculated from a single pollutant)
-            aqi_current = AQIConverter.to_iaqi(AQIConverter.POLLUTANT_PM25, str(current_pm2_5[1]), algo=AQIConverter.ALGO_EPA)
-            #print(aqi_current)
+            # Convert PM value to AQI
+            aqi_current = list()
+            for i in current_pm2_5:
+                aqi_current.append(AQIConverter.to_iaqi(AQIConverter.POLLUTANT_PM25, str(i), algo=AQIConverter.ALGO_EPA))
+
+            # Scaler for transforming data between [-1, 1]
+            scaler = BackendConfig.scaler
+
+            # Apply NowCast function to pm2.5 data
+            # Need raw=True to pass input as ndarray
+            current_nowcast = pd.Series(current_pm2_5).rolling(window=NOWCAST_WINDOW).apply(nowcast_pm, raw=True)
+            # Remove nulls from first window of NowCast data
+            nowcast_clean = pd.Series(current_nowcast[NOWCAST_WINDOW-1:])
+            nowcast_clean.reset_index(drop=True, inplace=True)
+
+            # Difference and scale the NowCast data
+            nowcast_diff = diff_scale(data=nowcast_clean, scaler=scaler, interval=DIFFERENCE_INTERVAL, return_arr=True)
 
             # Generate Intermediate AQI forecast based on current
-            aqi_forecast = forecast_aqi(current_pm2_5)
+            # Get only the most recent pm2.5 data because we need to add those 
+            # most recent values to the forecast to get the non-differenced forecast
+            aqi_forecast = forecast_aqi(X_scaled=nowcast_diff, X_raw=current_pm2_5[NOWCAST_WINDOW:], scaler=scaler)
 
             context = {
-                'current_aqi': aqi_current,
+                'current_pm2.5': current_pm2_5,
+                'aqi_current': aqi_current,
                 'forecast_aqi': aqi_forecast,
                 }
 
@@ -112,26 +129,7 @@ class Prediction(APIView):
         
 
 # HELPER FUNCTIONS
-# Transform time series to stationary:
-# Create a differenced series to remove any increasing trend
-def difference(dataset, interval=1):
-    diff = [None] * interval # Start with null value(s) so length matches the other data frames
-    # Iterate through 1 - n records
-    for i in range(interval, len(dataset)):
-        # Calculate difference between current and timestep and past timestep
-        value = dataset[i] - dataset[i - interval]
-        diff.append(value)
-
-    return pd.Series(diff)
-
-# Need to calculate 12 hr weighted averages for EPA NowCast methodology
-# See: https://usepa.servicenowservices.com/airnow?id=kb_article_view&sys_id=bb8b65ef1b06bc10028420eae54bcb98&spa=1
-# Use rolling `apply` for every 12 hrs
-# This will generate a new col of NowCast values that takes into context the previous 12 hrs
-# Then for the forecast we could train the model to forecast the next 24 - 48 hrs
-
-
-def now_cast_pm(input_arr):
+def nowcast_pm(input_arr):
     '''
     Apply EPA NowCast algorithm on sequence of timeseries (excluding final stage of converting to AQI).
 
@@ -169,12 +167,40 @@ def now_cast_pm(input_arr):
     # of the number of hours ago each value was measured.
     now_cast = (sum(products)) / (sum(weight_factor_pow))
     return now_cast
-
-    # TODO: Eventually convert this value to an AQI. A concentration to AQI converter is available at https://airnow.gov/aqi/aqi-calculator-concentration
     
+def difference(dataset, interval=1):
+    ''' 
+    Transform time series to stationary by differencing data to remove long term trend.
 
-# Difference and scale data to [-1, 1]
+    Parameters:
+    dataset --- list or ndarray of time series data
+    interval (default=1) --- number of time steps for differencing
+
+    Returns:
+    pandas Series containing differenced data
+    '''
+    diff = [None] * interval # Start with null value(s) so length matches the other data frames
+    # Iterate through 1 - n records
+    for i in range(interval, len(dataset)):
+        # Calculate difference between current and timestep and past timestep
+        value = dataset[i] - dataset[i - interval]
+        diff.append(value)
+
+    return pd.Series(diff)
+
 def diff_scale(data, scaler, interval=1, return_arr=False):
+    '''
+    Difference and scale data to [-1, 1]
+
+    Parameters:
+    data --- list or ndarray of time series data
+    scaler --- scaler object for normalizing data
+    interval --- number of timesteps to use for differencing
+    return_arr, default=False --- boolean to specify output type (1-D numpy array if true, 2-D numpy array if False)
+
+    Returns:
+    diff_scaled --- 1-D OR 2-D numpy array (depending on return_arr flag) containing differenced timeseries values
+    '''
     # Difference the data to remove any long term trend
     data_diff = difference(data, interval=interval)
     # Slice array to ignore first 'interval' # of elements (null) and convert to 2-D numpy array for scaler
@@ -189,7 +215,8 @@ def diff_scale(data, scaler, interval=1, return_arr=False):
         diff_scaled = diff_scaled[:, 0]
 
     # Otherwise return 2-D numpy array
-    return diff_scaled, scaler
+    return diff_scaled
+
  
 def invert_scale_diff(yhat, prev, scaler, steps_in, steps_out):
     '''
@@ -222,44 +249,41 @@ def invert_scale_diff(yhat, prev, scaler, steps_in, steps_out):
 
     return inverted_rm_diff
 
-def forecast_aqi(X, X_raw):
+def forecast_aqi(X_scaled, X_raw, scaler):
     '''
     Transform input air quality time series data and forecast future air quality.
 
     Parameters:
-    X --- list of numeric air quality time series data (eg [1.2, 5.0])
+    X_scaled --- list of scaled and differenced air quality time series data (eg [0.1, 0.3])
+    X_raw --- list of corresponding raw values for the same time series (eg [2, 5])
+    scaler --- scaler object for inverting the data transforms on the timeseries
 
-    Return:
+    Returns:
     forecast_aqi --- forecasted air quality in numeric format
     '''
-
-    # Get data scaler that was loaded on app start
-    # This scaler will transform the data between -1 and 1
-    scaler = BackendConfig.scaler
-
-    # Difference and scale the data
-    X_scaled = diff_scale(data=X, scaler=scaler, return_arr=True)
     
+    # Reshape the scaled data and raw data from [timesteps] to [samples, timesteps, features]
+    X_scaled_reshaped = np.array(X_scaled).reshape(1, len(X_scaled), 1)
+    X_raw_reshaped = np.array(X_raw).reshape(1, len(X_raw), 1)
+
     # Get LSTM model that was loaded on app start
     model = BackendConfig.model
 
     # Generate forecast
-    yhat_diff_scaled = model.predict(X_scaled, batch_size=BATCH_SIZE)
+    yhat_diff_scaled = model.predict(X_scaled_reshaped, batch_size=BATCH_SIZE)
 
     # Invert scaling and differencing
     yhat = invert_scale_diff(
         yhat=yhat_diff_scaled, 
-        prev=X_raw, #TODO generate X raw
+        prev=X_raw_reshaped,
         scaler=scaler, 
         steps_in=STEPS_IN, 
         steps_out=STEPS_OUT)
 
-    # Invert data transforms on forecast
-    forecast_pm2_5 = invert_scale_diff(yhat=yhat, prev=X[1], scaler=scaler)
-
     # Convert PM2.5 forecast to Intermediate AQI using the US EPA method
     # (Intermediate means calculated from a single pollutant)
-    aqi_forecast = AQIConverter.to_iaqi(AQIConverter.POLLUTANT_PM25, str(forecast_pm2_5), algo=AQIConverter.ALGO_EPA)
+    aqi_forecast = list()
+    for i in yhat[0,:]: # Select [features, timesteps]
+        aqi_forecast.append(AQIConverter.to_iaqi(AQIConverter.POLLUTANT_PM25, str(round(i, 2)), algo=AQIConverter.ALGO_EPA))
 
-    return aqi_forecast
-    
+    return aqi_forecast    
