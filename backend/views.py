@@ -72,6 +72,7 @@ class Prediction(APIView):
                 time_series.append(current_val)
 
             #print(time_series)
+            #time_series_formatted = np.array(timeseries.reshape(1, len(time))
             return time_series
         except:
             return -1
