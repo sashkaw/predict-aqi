@@ -1,15 +1,19 @@
-
 *, *::before, *::after {
-    box-sizing: border-box;
-    font-family: "Roboto", "sans-serif";
-  }
-  
-  html,
-  body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  box-sizing: border-box;
+  font-family: "Roboto", "sans-serif";
+}
+
+
+:root {
+  --gradient: linear-gradient(135deg, #5151e5 10%, #72edf2 100%);
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
