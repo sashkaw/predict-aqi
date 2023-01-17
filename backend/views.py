@@ -34,7 +34,8 @@ class Prediction(APIView):
         Make request to external API to get current air quality data.
 
         Return:
-        1) time_series --- list of numeric air quality time series data
+        1) time_series, time_steps --- lists of numeric air quality time series data and 
+            corresponding timesteps in unix time (UTC time zone)
         2) -1 on failure
         '''
         # Create url from params
@@ -53,6 +54,14 @@ class Prediction(APIView):
         d1_unix = int(mktime(d1.timetuple()))
         d2_unix = int(mktime(d2.timetuple()))
 
+        # Calculate forward time steps for displaying forecast data
+        # TODO: Make these local timezone for user
+        future_timesteps = list()
+        for i in range(NOWCAST_WINDOW):
+            # Add timesteps to most recent hour to get future time steps
+            next_timestep = d2 + timedelta(hours=(i + 1))
+            future_timesteps.append(next_timestep)
+
         # Specify query parameters for API call
         params = {
             'lat': lat,
@@ -69,12 +78,16 @@ class Prediction(APIView):
             # Extract air quality data
             api_data = list(api_json.get('list', {}))
             time_series = list()
+            #time_steps = list()
             # Extract air quality data of interest
+            # and corresponding time step (date) for each set of observations
             for item in api_data:
                 current_val = item.get('components', {}).get('pm2_5', None)
+                #current_dt = item.get('dt')
                 time_series.append(current_val)
+                #time_steps.append(current_dt)
 
-            return time_series
+            return time_series, future_timesteps
         except:
             return -1
         
@@ -88,8 +101,10 @@ class Prediction(APIView):
         2) Error response if external API failed
         '''
 
-        # Get current air quality data
-        current_pm2_5 = self.fetch_current_data()
+        # Get current air quality data and future timesteps
+        # NOTE: could add in current air quality data if desired 
+        # (eg have 1 extra data point for the UI)
+        current_pm2_5, future_ts = self.fetch_current_data()
 
         # If we got valid data
         if(current_pm2_5 != -1):
@@ -117,9 +132,10 @@ class Prediction(APIView):
             aqi_forecast = forecast_aqi(X_scaled=nowcast_diff, X_raw=current_pm2_5[NOWCAST_WINDOW:], scaler=scaler)
 
             context = {
-                'current_pm2.5': current_pm2_5,
+                'pm2.5_current': current_pm2_5,
                 'aqi_current': aqi_current,
-                'forecast_aqi': aqi_forecast,
+                'aqi_forecast': aqi_forecast,
+                'future_timesteps': future_ts,
                 }
 
             return Response(context, status=status.HTTP_200_OK)
