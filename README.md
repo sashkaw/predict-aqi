@@ -1,5 +1,5 @@
 # predict-aqi
-Django application to forecast Air Quality Index (AQI) using a Long Short-Term Memory (LSTM) neural network
+Django + React application to forecast Air Quality Index (AQI) using a Long Short-Term Memory (LSTM) neural network
 
 ## Overview
 - Cleans historic air quality data and fill gaps in the time series using `numpy` and `pandas`
