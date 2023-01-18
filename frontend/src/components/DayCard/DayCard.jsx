@@ -9,7 +9,7 @@ export function DayCard({ item, index, className, onClick }) {
     return (
         <li className={className} onClick={onClick}>
             <span className="timestep-name">{cardTimeStep}</span>
-            <span className="timestep-aqi">{item}</span>
+            <span className="timestep-aqi">AQI: {item}</span>
         </li>
     );
 }

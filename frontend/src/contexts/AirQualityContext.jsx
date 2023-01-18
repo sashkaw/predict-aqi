@@ -1,5 +1,8 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import dayjs from "dayjs";
+import dayjsPluginUTC from "dayjs-plugin-utc";
+dayjs.extend(dayjsPluginUTC)
 
 export const AQIContext = createContext();
 export const useAQIContext = () => useContext(AQIContext);
@@ -11,7 +14,11 @@ export const AQIProvider = (props) => {
         "latitude": 44.026280,
         "longitude": -123.083715,
       });
-
+    
+      // TODO: Add watchdog to refresh data when we reach the next time step
+      // and possibly update time to refresh automatically
+    const dateFormat = "h a MMM D";
+    const [currentTime, setCurrentTime] = useState(dayjs().format(dateFormat));
     const [currentData, setCurrentData] = useState(null);
     const [forecastData, setForecastData] = useState([]);
     const [futureTimeSteps, setFutureTimeSteps] = useState([]);
@@ -26,8 +33,14 @@ export const AQIProvider = (props) => {
                 // Get forecasted AQI for future time steps
                 setForecastData(response.data.aqi_forecast);
                 // Get corresponding time steps for forecasted data
-                setFutureTimeSteps(response.data.future_timesteps);
-                
+                const futureTimeStepsUTC = response.data.future_timesteps;
+                // Convert time stamps to local time
+                const futureTimeStepsLocal = [];
+                futureTimeStepsUTC.map((item, index) => {
+                    const localTime = dayjs.utc(item).local().format(dateFormat);
+                    futureTimeStepsLocal.push(localTime);
+                })
+                setFutureTimeSteps(futureTimeStepsLocal);
             });
     }, [site]); // Only run if value of site changes
     //console.log(futureTimeSteps, currentData)
@@ -37,6 +50,8 @@ export const AQIProvider = (props) => {
             value={{
                 site, 
                 setSite,
+                currentTime,
+                setCurrentTime,
                 currentData,
                 setCurrentData,
                 forecastData,

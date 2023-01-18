@@ -4,13 +4,10 @@ import dayjs from "dayjs";
 
 export function SelectedView() {
     // Get current AQI and forecast AQI
-    const { site, currentData } = useAQIContext();
+    const { site, currentData, currentTime } = useAQIContext();
 
     // Show loading message if waiting for data
     if(!currentData) return <div>Loading...</div>
-
-    // Get current time
-    const currentTime = dayjs().format("MMM D, YYYY - h:m a");
 
     // TODO: Add function to map AQI's to string definitions
     return (

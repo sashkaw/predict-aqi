@@ -3,12 +3,13 @@ import { useAQIContext } from "../../contexts/AirQualityContext";
 import { DayCard } from "../DayCard";
 
 export function TimeStepsInfo() {
-    const { forecastData, setCurrentData } = useAQIContext();
+    const { forecastData, futureTimeSteps, setCurrentData , setCurrentTime} = useAQIContext();
     const [selectedCard, setSelectedCard] = useState(0);
 
     useEffect(() => {
         setCurrentData(forecastData[selectedCard]);
-    }, [forecastData]); // Skip effect if current data already set
+        setCurrentTime(futureTimeSteps[selectedCard]);
+    }, [forecastData]); // Skip effect if forecast data already set
 
     return (
         <div className="timesteps-container">
@@ -21,8 +22,10 @@ export function TimeStepsInfo() {
                                 onClick={() => {
                                     setSelectedCard(index);
                                     setCurrentData(item);
+                                    setCurrentTime(futureTimeSteps[index]);
                                 }}
                                 key={index}
+                                index={index}
                                 item={item}
                             />
                         );
