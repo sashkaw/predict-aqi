@@ -3,6 +3,7 @@ node_modules/
 
 # Archived files
 previous_versions/
+ignore/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
