@@ -55,7 +55,8 @@ class Prediction(APIView):
         d2_unix = int(mktime(d2.timetuple()))
 
         # Calculate forward time steps for displaying forecast data
-        # TODO: Make these local timezone for user
+        # Note: Keep these time stamps in UTC so we can 
+        # convert to local time on the frontend
         future_timesteps = list()
         for i in range(NOWCAST_WINDOW):
             # Add timesteps to most recent hour to get future time steps
