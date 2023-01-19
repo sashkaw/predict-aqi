@@ -35,8 +35,8 @@ module.exports = {
         template: "./templates/frontend/index.html",
         filename: "./index.html",
         // This has effect on the react lib size
-        //"process.env.NODE_ENV": JSON.stringify("production"),
-        "process.env.NODE_ENV": JSON.stringify("development"), // must match what is in package.json
+        "process.env.NODE_ENV": JSON.stringify("production"),
+        //"process.env.NODE_ENV": JSON.stringify("development"), // must match what is in package.json
     }),
     /*new webpack.DefinePlugin({
       // This has effect on the react lib size
