@@ -63,6 +63,9 @@ class Prediction(APIView):
             next_timestep = d2 + timedelta(hours=(i + 1))
             future_timesteps.append(next_timestep)
 
+        formatted_API_key = settings.WEATHER_API_KEY.replace('\"', '' )
+        print("formatted key:", formatted_API_key)
+
         # Specify query parameters for API call
         params = {
             'lat': lat,
@@ -70,7 +73,7 @@ class Prediction(APIView):
             'start': d1_unix,
             'end': d2_unix,
             # Parse API Key to remove double quotes
-            'appid': settings.WEATHER_API_KEY.replace('\"', '' ),
+            'appid': formatted_API_key,
         }
 
         print("params:", params)
