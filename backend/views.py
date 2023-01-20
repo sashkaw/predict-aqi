@@ -75,6 +75,7 @@ class Prediction(APIView):
         # Fetch data from external API
         try:
             api_response = requests.get(url=WEATHER_API_URL, params=params)
+            print("api_response", api_response)
             api_json = api_response.json()
             # Extract air quality data
             api_data = list(api_json.get('list', {}))
@@ -88,8 +89,10 @@ class Prediction(APIView):
                 time_series.append(current_val)
                 #time_steps.append(current_dt)
 
+            print("timeseries",  time_series)
             return time_series, future_timesteps
         except:
+            print("external API error")
             return -1
         
     def get(self, request):
