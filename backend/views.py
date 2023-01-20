@@ -69,7 +69,8 @@ class Prediction(APIView):
             'lon': long,
             'start': d1_unix,
             'end': d2_unix,
-            'appid': settings.WEATHER_API_KEY,
+            # Parse API Key to remove double quotes
+            'appid': settings.WEATHER_API_KEY.replace('\"', '' ),
         }
 
         print("params:", params)
