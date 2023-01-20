@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: aqi_forecast
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn aqi_forecast.wsgi:application"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
+      - key: WEATHER_API_KEY
+        sync: false # will not be copied to preview environments

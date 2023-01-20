@@ -1,4 +1,5 @@
 # IMPORTS
+import ast
 import numpy as np
 import pandas as pd
 import requests
@@ -63,8 +64,8 @@ class Prediction(APIView):
             next_timestep = d2 + timedelta(hours=(i + 1))
             future_timesteps.append(next_timestep)
 
-        formatted_API_key = settings.WEATHER_API_KEY.replace('\"', '' )
-        print("formatted key:", formatted_API_key)
+        #formatted_API_key = ast.literal_eval(settings.WEATHER_API_KEY)#.replace('\"', '' )
+        #print("formatted key:", formatted_API_key)
 
         # Specify query parameters for API call
         params = {
@@ -72,8 +73,7 @@ class Prediction(APIView):
             'lon': long,
             'start': d1_unix,
             'end': d2_unix,
-            # Parse API Key to remove double quotes
-            'appid': formatted_API_key,
+            'appid': settings.WEATHER_API_KEY,
         }
 
         print("params:", params)
@@ -95,10 +95,10 @@ class Prediction(APIView):
                 time_series.append(current_val)
                 #time_steps.append(current_dt)
 
-            print("timeseries",  time_series)
+            #print("timeseries",  time_series)
             return time_series, future_timesteps
         except:
-            print("external API error")
+            #print("external API error")
             return -1
         
     def get(self, request):
