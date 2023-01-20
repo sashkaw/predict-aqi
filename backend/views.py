@@ -63,8 +63,6 @@ class Prediction(APIView):
             next_timestep = d2 + timedelta(hours=(i + 1))
             future_timesteps.append(next_timestep)
 
-        print("key: ", settings.WEATHER_API_KEY)
-        
         # Specify query parameters for API call
         params = {
             'lat': lat,
@@ -73,6 +71,8 @@ class Prediction(APIView):
             'end': d2_unix,
             'appid': settings.WEATHER_API_KEY,
         }
+
+        print("params:", params)
 
         # Fetch data from external API
         try:
