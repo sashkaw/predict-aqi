@@ -8,6 +8,16 @@ export const AQIContext = createContext();
 export const useAQIContext = () => useContext(AQIContext);
 
 export const AQIProvider = (props) => {
+    const refreshInterval = 1000 * 60 * 60; // Every hour
+    const dateFormat = "h a MMM D";
+    // Get current time so we know when to refresh the forecast
+    const [nowTime, setNowTime] = useState(dayjs().format(dateFormat));
+    // Helper function to update the current time
+    const refreshClock = () => {
+        setNowTime(dayjs().format(dateFormat));
+    }
+
+    // Set up additional state variables
     const [site, setSite] = useState({
         "id": 1,
         "name": "Amazon Park - Eugene, OR",
@@ -15,16 +25,23 @@ export const AQIProvider = (props) => {
         "longitude": -123.083715,
       });
     
-      // TODO: Add watchdog to refresh data when we reach the next time step
-      // and possibly update time to refresh automatically
-    const dateFormat = "h a MMM D";
     const [currentTime, setCurrentTime] = useState(dayjs().format(dateFormat));
     const [currentData, setCurrentData] = useState(null);
     const [forecastData, setForecastData] = useState([]);
     const [futureTimeSteps, setFutureTimeSteps] = useState([]);
 
-    // Fetch AQI data from backend after DOM has updated
+    // Set up timer to refresh current time stamp
     useEffect(() => {
+        const timerId = setInterval(refreshClock, refreshInterval);
+        return function cleanup() {
+          clearInterval(timerId);
+        };
+      }, [nowTime]);
+
+    // Fetch AQI data from backend
+    // at a given refresh interval
+    useEffect(() => {
+        //console.log("axios:", nowTime);
         axios('/aqi/')
             .then((response) => {
                 //console.log(response.data.aqi_current.at(-1))
@@ -42,8 +59,8 @@ export const AQIProvider = (props) => {
                 })
                 setFutureTimeSteps(futureTimeStepsLocal);
             });
-    }, [site]); // Only run if value of site changes
-    //console.log(futureTimeSteps, currentData)
+        //}
+    }, [nowTime]); // Only run if value of current time changes
 
     return (
         <AQIContext.Provider
