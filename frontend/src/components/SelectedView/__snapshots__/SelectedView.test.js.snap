@@ -1,0 +1,68 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Selected View /> Create element for viewing selected forecast time step 1`] = `
+<div
+  className="selected-view"
+>
+  <div
+    className="date-container"
+  >
+    <h2
+      className="date-dayname"
+    >
+      11am Jan 2023
+    </h2>
+    <span>
+      <svg
+        className="location-icon"
+        color="white"
+        fill="none"
+        height="1em"
+        stroke="currentColor"
+        strokeWidth="0"
+        style={
+          {
+            "color": "white",
+          }
+        }
+        viewBox="0 0 24 24"
+        width="1em"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+        />
+        <path
+          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+        />
+      </svg>
+    </span>
+    <span
+      className="location"
+    >
+      Amazon Park - Eugene, OR
+    </span>
+  </div>
+  <div
+    className="aqi-container"
+  >
+    <h1
+      className="aqi"
+    >
+      AQI: 
+      1
+      2
+      3
+      4
+      5
+      6
+    </h1>
+  </div>
+</div>
+`;

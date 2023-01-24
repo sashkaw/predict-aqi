@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Location /> Create location container 1`] = `
+<div
+  className="location-container"
+>
+  <select
+    className="location-button"
+    defaultValue="1"
+    onChange={[Function]}
+  >
+    <option
+      value={1}
+    >
+      Amazon Park - Eugene, OR
+    </option>
+  </select>
+</div>
+`;
