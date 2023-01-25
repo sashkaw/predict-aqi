@@ -6,7 +6,7 @@ import requests
 from time import mktime
 from datetime import datetime, timedelta
 import aqi as AQIConverter
-from .apps import *
+from .apps import BackendConfig
 from django.conf import settings
 from rest_framework import status
 from rest_framework.views import APIView
@@ -121,7 +121,10 @@ class Prediction(APIView):
             # Convert PM value to AQI
             aqi_current = list()
             for i in current_pm2_5:
-                aqi_current.append(AQIConverter.to_iaqi(AQIConverter.POLLUTANT_PM25, str(i), algo=AQIConverter.ALGO_EPA))
+                aqi_current.append(
+                    AQIConverter.to_iaqi(AQIConverter.POLLUTANT_PM25, 
+                    str(i), 
+                    algo=AQIConverter.ALGO_EPA))
 
             # Scaler for transforming data between [-1, 1]
             scaler = BackendConfig.scaler
@@ -134,12 +137,19 @@ class Prediction(APIView):
             nowcast_clean.reset_index(drop=True, inplace=True)
 
             # Difference and scale the NowCast data
-            nowcast_diff = diff_scale(data=nowcast_clean, scaler=scaler, interval=DIFFERENCE_INTERVAL, return_arr=True)
+            nowcast_diff = diff_scale(
+                data=nowcast_clean,
+                scaler=scaler,
+                interval=DIFFERENCE_INTERVAL,
+                return_arr=True)
 
             # Generate Intermediate AQI forecast based on current
             # Get only the most recent pm2.5 data because we need to add those 
             # most recent values to the forecast to get the non-differenced forecast
-            aqi_forecast = forecast_aqi(X_scaled=nowcast_diff, X_raw=current_pm2_5[NOWCAST_WINDOW:], scaler=scaler)
+            aqi_forecast = forecast_aqi(
+                X_scaled=nowcast_diff,
+                X_raw=current_pm2_5[NOWCAST_WINDOW:],
+                scaler=scaler)
 
             context = {
                 'pm2.5_current': current_pm2_5,
@@ -300,16 +310,19 @@ def forecast_aqi(X_scaled, X_raw, scaler):
 
     # Invert scaling and differencing
     yhat = invert_scale_diff(
-        yhat=yhat_diff_scaled, 
+        yhat=yhat_diff_scaled,
         prev=X_raw_reshaped,
-        scaler=scaler, 
-        steps_in=STEPS_IN, 
+        scaler=scaler,
+        steps_in=STEPS_IN,
         steps_out=STEPS_OUT)
 
     # Convert PM2.5 forecast to Intermediate AQI using the US EPA method
     # (Intermediate means calculated from a single pollutant)
     aqi_forecast = list()
-    for i in yhat[0,:]: # Select [features, timesteps]
-        aqi_forecast.append(AQIConverter.to_iaqi(AQIConverter.POLLUTANT_PM25, str(round(i, 2)), algo=AQIConverter.ALGO_EPA))
+    for i in yhat[0, :]:  # Select [features, timesteps]
+        aqi_forecast.append(
+            AQIConverter.to_iaqi(AQIConverter.POLLUTANT_PM25,
+                                 str(round(i, 2)),
+                                 algo=AQIConverter.ALGO_EPA))
 
     return aqi_forecast    
