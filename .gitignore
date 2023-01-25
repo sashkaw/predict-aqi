@@ -1,6 +1,9 @@
 # Node packages
 node_modules/
 
+# Test coverage
+coverage/
+
 # Archived files
 previous_versions/
 ignore/
