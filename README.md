@@ -10,8 +10,12 @@ Django + React application to forecast Air Quality Index (AQI) using a Long Shor
 - Utilizes `Django REST Framework` to create a REST API:
   - Django backend fetches current air quality data from an external API for use in forecasting air quality
  - Uses `React` to fetch data from backend API and create frontend forecast interface
+
+## Testing
+ - To run Django tests, `cd` into the root directory and run `python manage.py test`
+ - To run Jest + React tests, `cd` into `frontend/` and run `npm run test`
  
-## Attributions:
+## Attributions
 - Frontend structure based on <a href="https://github.com/duvainel/weather-app">weather app (MIT License)</a> by <a href="https://github.com/duvainel">@duvainel</a>
 - Background image by <a href="https://pixabay.com/users/12019-12019/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=2184940">David Mark</a> from <a href="https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=2184940">Pixabay</a>
 
