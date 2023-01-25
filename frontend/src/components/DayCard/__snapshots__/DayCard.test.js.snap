@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<DayCard /> Create day card element with current data 1`] = `
+exports[`<DayCard /> Renders DayCard element and text content 1`] = `
 <li
   className=""
   onClick={[Function]}

@@ -1,9 +1,11 @@
-import renderer from "react-test-renderer";
-import { render, screen } from "@testing-library/react";
+import renderer, { act } from "react-test-renderer";
+import { getByRole, render, screen } from "@testing-library/react";
 import { useEffect, useState, useContext } from "react";
 import { DayCard } from "./DayCard";
 import { AQIContext, useAQIContext } from "../../contexts/AirQualityContext";
 import TestAQIProvider from "../Fixtures.js";
+import { unmountComponentAtNode } from "react-dom";
+import { toBeInTheDocument } from "@testing-library/jest-dom";
 
 // Set up DayCard with mock data
 const Fixture = () => {
@@ -41,8 +43,27 @@ const matches = (children) => expect(
 
 // Tests
 describe("<DayCard />", () => {
+    let container = null;
+    beforeEach(() => {
+        // Setup a DOM element as a render target
+        container = document.createElement("div");
+        document.body.appendChild(container);
+    });
+    afterEach(() => {
+        // Cleanup on exiting
+        unmountComponentAtNode(container);
+        container.remove();
+        container = null;
+    });
 
-    test("Create day card element with current data", () => {
+    test("Renders DayCard element and text content", () => {
+        const { getByRole } = render(<Fixture />, container);
+        // Renders list item
+        expect(getByRole("listitem")).toBeInTheDocument();
+        // Renders forecast timestep and data
+        expect(document.body.querySelector(".timestep-name").textContent).toBe("2pm");
+        expect(document.body.querySelector(".timestep-aqi").textContent).toBe("AQI: 5");
+        // Render matches snapshot
         matches(<Fixture />);
     });
 })
