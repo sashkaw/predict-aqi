@@ -8,7 +8,7 @@ steps:
   env:
     - 'SECRET_KEY=${_SECRET_KEY}'
     - 'WEATHER_API_KEY=${_WEATHER_API_KEY}'
-  secretEnv: ['SECRET_KEY']
+  #secretEnv: ['SECRET_KEY']
 - name: "gcr.io/cloud-builders/gcloud"
   args: ["app", "deploy"]
 timeout: "1600s"
