@@ -17,5 +17,4 @@ availableSecrets:
   secretManager:
   ***REMOVED***
     env: 'SECRET_KEY'
-  ***REMOVED***
     env: 'WEATHER_API_KEY'
