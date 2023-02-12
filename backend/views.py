@@ -150,7 +150,7 @@ class Prediction(APIView):
                 X_scaled=nowcast_diff,
                 X_raw=current_pm2_5[NOWCAST_WINDOW:],
                 scaler=scaler)
-
+            
             context = {
                 'pm2.5_current': current_pm2_5,
                 'aqi_current': aqi_current,
@@ -318,11 +318,12 @@ def forecast_aqi(X_scaled, X_raw, scaler):
 
     # Convert PM2.5 forecast to Intermediate AQI using the US EPA method
     # (Intermediate means calculated from a single pollutant)
-    aqi_forecast = list()
-    for i in yhat[0, :]:  # Select [features, timesteps]
-        aqi_forecast.append(
-            AQIConverter.to_iaqi(AQIConverter.POLLUTANT_PM25,
-                                 str(round(i, 2)),
-                                 algo=AQIConverter.ALGO_EPA))
+    #aqi_forecast = list()
+    #for i in yhat[0, :]:  # Select [features, timesteps]
+        #aqi_forecast.append(
+        #    AQIConverter.to_iaqi(AQIConverter.POLLUTANT_PM25,
+        #                         str(round(i, 2)),
+        #                         algo=AQIConverter.ALGO_EPA))
 
-    return aqi_forecast    
+    #return aqi_forecast 
+    return yhat[0, :]

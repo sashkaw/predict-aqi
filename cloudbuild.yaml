@@ -1,0 +1,21 @@
+steps:
+- name: 'python:3.7'
+  entrypoint: python3
+  args: ['-m', 'pip', 'install', '-t', '.', '-r', 'requirements.txt']
+- name: 'python:3.7'
+  entrypoint: python3
+  args: ['./manage.py', 'collectstatic', '--noinput']
+  #env:
+  #  - 'SECRET_KEY=${_SECRET_KEY}'
+  #  - 'WEATHER_API_KEY=${_WEATHER_API_KEY}'
+  secretEnv: ['SECRET_KEY']
+- name: "gcr.io/cloud-builders/gcloud"
+  args: ["app", "deploy"]
+timeout: "1600s"
+
+availableSecrets:
+  secretManager:
+  ***REMOVED***
+    env: 'SECRET_KEY'
+  ***REMOVED***
+    env: 'WEATHER_API_KEY'
