@@ -3,13 +3,11 @@ steps:
   entrypoint: python3
   args: ['-m', 'venv', 'venv']
 - name: 'python:3.8'
-  entrypoint: python3
-  args: ['-m', '.', 'venv/bin/activate']
+  entrypoint: 'venv/bin/pip'
+  args: ['install', '-V', '-r', 'requirements.txt']
 - name: 'python:3.8'
-  entrypoint: python3
-  args: ['-m', 'pip', 'install', '-t', '.', '-r', 'requirements.txt']
-- name: 'python:3.8'
-  entrypoint: python3
+  #entrypoint: python3
+  entrypoint: 'venv/bin/python'
   args: ['./manage.py', 'collectstatic', '--noinput']
   env:
     - 'SECRET_KEY=${_SECRET_KEY}'
