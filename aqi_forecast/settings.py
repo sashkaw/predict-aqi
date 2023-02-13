@@ -8,15 +8,22 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 import os
-#from dotenv import load_dotenv
+import io
+import environ
+from dotenv import load_dotenv
 from pathlib import Path
+from urllib.parse import urlparse
+from google.cloud import secretmanager
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 #BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load environment
-'''load_dotenv()
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# Load environment
+load_dotenv()
+'''
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
@@ -33,32 +40,27 @@ DEBUG = bool(int(os.environ.get('DEBUG', 0)))
 
 #ALLOWED_HOSTS = ['predict-aqi.onrender.com', 'localhost', '127.0.0.1']
 ALLOWED_HOSTS = ['*']'''
-import io
-from urllib.parse import urlparse
 
-import environ
-from google.cloud import secretmanager
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 # [START gaestd_py_django_secret_config]
-env = environ.Env(DEBUG=(bool, False))
-env_file = os.path.join(BASE_DIR, ".env")
+#env = environ.Env(DEBUG=(bool, False))
+#env_file = os.path.join(BASE_DIR, ".env")
 
-if os.path.isfile(env_file):
-    # Use a local secret file, if provided
-
-    env.read_env(env_file)
+#if os.path.isfile(env_file):
+#    # Use a local secret file, if provided
+#
+#    env.read_env(env_file)
 # [START_EXCLUDE]
-elif os.getenv("TRAMPOLINE_CI", None):
-    # Create local settings if running with CI, for unit testing
-
-    placeholder = (
-        f"SECRET_KEY=a\n"
-        f"DATABASE_URL=sqlite://{os.path.join(BASE_DIR, 'db.sqlite3')}"
-    )
-    env.read_env(io.StringIO(placeholder))
+#elif os.getenv("TRAMPOLINE_CI", None):
+#    # Create local settings if running with CI, for unit testing
+#
+#    placeholder = (
+#        f"SECRET_KEY=a\n"
+#        f"DATABASE_URL=sqlite://{os.path.join(BASE_DIR, 'db.sqlite3')}"
+#    )
+#    env.read_env(io.StringIO(placeholder))
 # [END_EXCLUDE]
 '''elif os.environ.get("GOOGLE_CLOUD_PROJECT", None):
     # Pull secrets from Secret Manager
@@ -74,7 +76,8 @@ elif os.getenv("TRAMPOLINE_CI", None):
 #else:
 #    raise Exception("No local .env or GOOGLE_CLOUD_PROJECT detected. No secrets found.")
 # Pull secrets from Secret Manager
-project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
+#project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
+***REMOVED***
 
 client = secretmanager.SecretManagerServiceClient()
 ***REMOVED***
