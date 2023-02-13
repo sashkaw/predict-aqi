@@ -255,7 +255,9 @@ if os.getenv("USE_CLOUD_SQL_AUTH_PROXY", None):
 
 else:
     GS_BUCKET_NAME=access_secret(project_id, 'GS_BUCKET_NAME')
-    STATIC_URL = "/static/"
+    STATIC_URL = '/static/'
+    STATICFILES_DIRS = [BASE_DIR / 'static'] #added
+    STATIC_ROOT = BASE_DIR / 'staticfiles' #added
     DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
     STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
     #GS_DEFAULT_ACL = "publicRead"
