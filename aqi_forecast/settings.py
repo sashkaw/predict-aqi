@@ -250,14 +250,14 @@ if os.getenv("USE_CLOUD_SQL_AUTH_PROXY", None):
     print("found sql auth")
     STATIC_URL = '/static/'
     STATICFILES_DIRS = [BASE_DIR / 'static']
-    STATIC_ROOT = BASE_DIR / 'staticfiles'
+    STATIC_ROOT = BASE_DIR / 'static'
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 else:
     GS_BUCKET_NAME=access_secret(project_id, 'GS_BUCKET_NAME')
     STATIC_URL = '/static/'
-    STATICFILES_DIRS = [BASE_DIR / 'static'] #added
-    STATIC_ROOT = BASE_DIR / 'staticfiles' #added
+    #STATICFILES_DIRS = [BASE_DIR / 'static'] #added
+    #STATIC_ROOT = BASE_DIR / 'static' #added
     DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
     STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
     #GS_DEFAULT_ACL = "publicRead"
