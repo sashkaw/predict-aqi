@@ -15,83 +15,37 @@ from dotenv import load_dotenv
 from pathlib import Path
 from urllib.parse import urlparse
 from google.cloud import secretmanager
+import google.auth
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-#BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Attempt to load the Project ID into the environment, safely failing on error.
+try:
+    _, os.environ["GOOGLE_CLOUD_PROJECT"] = google.auth.default()
+except google.auth.exceptions.DefaultCredentialsError:
+    pass
+
 
 # Load environment
 load_dotenv()
-'''
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY')
-# SECURITY WARNING: don't run with debug turned on in production!
-
-# API key for air quality data
-WEATHER_API_KEY = os.environ.get('WEATHER_API_KEY')
-
-#DEBUG = True
-DEBUG = bool(int(os.environ.get('DEBUG', 0)))
-
-
-#ALLOWED_HOSTS = ['predict-aqi.onrender.com', 'localhost', '127.0.0.1']
-ALLOWED_HOSTS = ['*']'''
-
-
-
-
-# [START gaestd_py_django_secret_config]
-#env = environ.Env(DEBUG=(bool, False))
-#env_file = os.path.join(BASE_DIR, ".env")
-
-#if os.path.isfile(env_file):
-#    # Use a local secret file, if provided
-#
-#    env.read_env(env_file)
-# [START_EXCLUDE]
-#elif os.getenv("TRAMPOLINE_CI", None):
-#    # Create local settings if running with CI, for unit testing
-#
-#    placeholder = (
-#        f"SECRET_KEY=a\n"
-#        f"DATABASE_URL=sqlite://{os.path.join(BASE_DIR, 'db.sqlite3')}"
-#    )
-#    env.read_env(io.StringIO(placeholder))
-# [END_EXCLUDE]
-'''elif os.environ.get("GOOGLE_CLOUD_PROJECT", None):
-    # Pull secrets from Secret Manager
-    project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
-
-    client = secretmanager.SecretManagerServiceClient()
-    ***REMOVED***
-    ***REMOVED***
-    name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
-    payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
-
-    env.read_env(io.StringIO(payload))'''
-#else:
-#    raise Exception("No local .env or GOOGLE_CLOUD_PROJECT detected. No secrets found.")
 # Pull secrets from Secret Manager
-#project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
-***REMOVED***
-
-#client = secretmanager.SecretManagerServiceClient()
-***REMOVED***
-***REMOVED***
-#name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
-#payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
+project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
 
 def access_secret(project_id, secret_str):
     """
-    Access secret in GCP Secrets Manager
+    Desc: Access secret in GCP Secrets Manager
+
+    Parameters:
+    project_id --- GCP project ID
+    secret_str --- name of secret (Eg MY_SECRET_KEY)
+
+    Returns:
+    secret_val --- value of secret (including single quotes)
     """
     client = secretmanager.SecretManagerServiceClient()
-    ***REMOVED***
+    settings_name = os.environ.get("SETTINGS_NAME", project_id)
     name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
     payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
 
@@ -105,29 +59,11 @@ WEATHER_API_KEY = access_secret(project_id, 'WEATHER_API_KEY')
 
 # [END gaestd_py_django_secret_config]
 
-#SECRET_KEY = env("SECRET_KEY")
-#SECRET_KEY = payload.get("SECRET_KEY") #or payload.get("_SECRET_KEY")
-# SECURITY WARNING: don't run with debug turned on in production!
-# Change this to "False" when you are ready for production
-#DEBUG = env("DEBUG")
-
-# SECURITY WARNING: keep the secret key used in production secret!
-#SECRET_KEY = os.environ.get('SECRET_KEY')
-# SECURITY WARNING: don't run with debug turned on in production!
-
-# API key for air quality data
-#WEATHER_API_KEY = os.environ.get('WEATHER_API_KEY')
-#WEATHER_API_KEY = payload.get("WEATHER_API_KEY")
-
-#DEBUG = True
 DEBUG = bool(int(os.environ.get('DEBUG', 0)))
 
-
-#ALLOWED_HOSTS = ['predict-aqi.onrender.com', 'localhost', '127.0.0.1']
 ALLOWED_HOSTS = ['*']
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -151,8 +87,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-#STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 ROOT_URLCONF = 'aqi_forecast.urls'
 
@@ -233,16 +167,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-#STATIC_URL = '/static/'
-#STATICFILES_DIRS = [BASE_DIR / 'static']
-#STATIC_ROOT = BASE_DIR / 'staticfiles'
-#STATIC_ROOT = '/static'
-
-# GCP sample
-#STATIC_ROOT = "static"
-#STATIC_URL = "/static/"
-#STATICFILES_DIRS = []
-
 # Static files (CSS, JavaScript, Images)
 # [START cloudrun_django_static_config]
 # Define static storage via django-storages[google]
@@ -256,17 +180,10 @@ if os.getenv("USE_CLOUD_SQL_AUTH_PROXY", None):
 else:
     GS_BUCKET_NAME=access_secret(project_id, 'GS_BUCKET_NAME')
     STATIC_URL = '/static/'
-    #STATICFILES_DIRS = [BASE_DIR / 'static'] #added
-    #STATIC_ROOT = BASE_DIR / 'static' #added
     DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
     STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
-    #GS_DEFAULT_ACL = "publicRead"
     GS_QUERYSTRING_AUTH = False
     GS_DEFAULT_ACL = None
-
-# MEDIA_URL = "/media/"
-# MEDIAFILES_DIRS = [BASE_DIR / "media"]  # new
-# MEDIA_ROOT = BASE_DIR / "mediafiles"  # new
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
