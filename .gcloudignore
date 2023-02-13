@@ -28,6 +28,7 @@ node_modules/
 # Archived files
 previous_versions/
 ignore/
+bfg/
 
 # Other
 .git

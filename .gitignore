@@ -10,6 +10,7 @@ coverage/
 # Archived files
 previous_versions/
 ignore/
+bfg/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
