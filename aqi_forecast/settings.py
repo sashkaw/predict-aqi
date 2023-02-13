@@ -83,8 +83,8 @@ client = secretmanager.SecretManagerServiceClient()
 ***REMOVED***
 ***REMOVED***
 name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
-#payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
-payload = client.access_secret_version(name=name).to_JSON()
+payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
+#payload = client.access_secret_version(name=name).to_JSON()
 print("p here: ", payload)
 # [END gaestd_py_django_secret_config]
 
@@ -95,7 +95,7 @@ print("p here: ", payload)
 #DEBUG = env("DEBUG")
 
 # SECURITY WARNING: keep the secret key used in production secret!
-#SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 
 # API key for air quality data
