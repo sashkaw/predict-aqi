@@ -79,15 +79,33 @@ ALLOWED_HOSTS = ['*']'''
 #project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
 ***REMOVED***
 
-client = secretmanager.SecretManagerServiceClient()
+#client = secretmanager.SecretManagerServiceClient()
 ***REMOVED***
 ***REMOVED***
-name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
-payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
-#payload = client.access_secret_version(name=name).to_JSON()
-print("p here: ", payload)
-print("p type", type(payload))
-print("p.data: ", client.access_secret_version(name=name).payload.data)
+#name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
+#payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
+
+def access_secret(project_id, secret_id, version):
+    """
+    Access a secret- API token, etc- stored in Secret Manager
+    """
+    client = secretmanager.SecretManagerServiceClient()
+
+    # Build the resource name of the secret version
+    name = client.secret_version_path(project_id, secret_id, version)
+
+    # Access the secret version
+    response = client.access_secret_version(name)
+
+    # Return the secret payload
+    payload = response.payload.data.decode('UTF-8')
+
+    return payload
+
+
+SECRET_KEY = access_secret(project_id, 'SECRET_KEY', 'latest')
+WEATHER_API_KEY = access_secret(project_id, 'WEATHER_API_KEY', 'latest')
+
 # [END gaestd_py_django_secret_config]
 
 #SECRET_KEY = env("SECRET_KEY")
@@ -97,12 +115,12 @@ print("p.data: ", client.access_secret_version(name=name).payload.data)
 #DEBUG = env("DEBUG")
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY')
+#SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 
 # API key for air quality data
 #WEATHER_API_KEY = os.environ.get('WEATHER_API_KEY')
-WEATHER_API_KEY = payload.get("WEATHER_API_KEY")
+#WEATHER_API_KEY = payload.get("WEATHER_API_KEY")
 
 #DEBUG = True
 DEBUG = bool(int(os.environ.get('DEBUG', 0)))
