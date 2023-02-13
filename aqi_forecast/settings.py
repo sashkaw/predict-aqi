@@ -95,8 +95,8 @@ def access_secret(project_id, secret_str):
     name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
     payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
 
-    # Extract value for secret
-    secret_val = re.search(f'(?<={secret_str}=).*(?=\\n)', payload)[0]
+    # Extract value for secret (either before newline or at end of values)
+    secret_val = re.search(f'(?<={secret_str}=).*(?=\\n|'')', payload)[0]
 
     return secret_val
 
