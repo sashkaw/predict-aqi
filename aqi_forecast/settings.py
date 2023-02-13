@@ -136,6 +136,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'storages', # GCP static file storage
     'backend.apps.BackendConfig',
     'frontend.apps.FrontendConfig',
 ]
