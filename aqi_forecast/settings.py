@@ -86,6 +86,8 @@ name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
 payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
 #payload = client.access_secret_version(name=name).to_JSON()
 print("p here: ", payload)
+print("p type", type(payload))
+print("p.data: ", client.access_secret_version(name=name).payload.data)
 # [END gaestd_py_django_secret_config]
 
 #SECRET_KEY = env("SECRET_KEY")
