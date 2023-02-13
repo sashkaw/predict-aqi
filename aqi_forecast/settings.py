@@ -182,9 +182,20 @@ MODELS = os.path.join(BASE_DIR, 'ml/models')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        #'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3')
     }
 }
+
+# Use django-environ to parse the connection string
+#DATABASE_URL=access_secret(project_id, 'DATABASE_URL')
+#DATABASES = {"default": env.db()}
+#DATABASES = {"default": DATABASE_URL}
+
+# If the flag as been set, configure to use proxy
+#if os.getenv("USE_CLOUD_SQL_AUTH_PROXY", None):
+#    DATABASES["default"]["HOST"] = "127.0.0.1"
+#    DATABASES["default"]["PORT"] = 5432
 
 
 # Password validation
