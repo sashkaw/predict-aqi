@@ -151,7 +151,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+#STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 ROOT_URLCONF = 'aqi_forecast.urls'
 
@@ -232,15 +232,24 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = '/static/'
+#STATIC_URL = '/static/'
 #STATICFILES_DIRS = [BASE_DIR / 'static']
 #STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATIC_ROOT = '/static'
+#STATIC_ROOT = '/static'
 
 # GCP sample
 #STATIC_ROOT = "static"
 #STATIC_URL = "/static/"
 #STATICFILES_DIRS = []
+
+# Static files (CSS, JavaScript, Images)
+# [START cloudrun_django_static_config]
+# Define static storage via django-storages[google]
+GS_BUCKET_NAME=access_secret(project_id, 'GS_BUCKET_NAME')
+STATIC_URL = "/static/"
+DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+GS_DEFAULT_ACL = "publicRead"
 
 # MEDIA_URL = "/media/"
 # MEDIAFILES_DIRS = [BASE_DIR / "media"]  # new
