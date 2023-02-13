@@ -57,11 +57,27 @@ def access_secret(project_id, secret_str):
 SECRET_KEY = access_secret(project_id, 'SECRET_KEY')
 WEATHER_API_KEY = access_secret(project_id, 'WEATHER_API_KEY')
 
-# [END gaestd_py_django_secret_config]
-
+# Set DEBUG=False for production
 DEBUG = bool(int(os.environ.get('DEBUG', 0)))
 
-ALLOWED_HOSTS = ['*']
+# SECURITY WARNING: It's recommended that you use this when
+# running in production. The URL will be known once you first deploy
+# to Cloud Run. This code takes the URL and converts it to both these settings formats.
+
+# Set allowed hosts to all for local development
+if os.getenv("USE_CLOUD_SQL_AUTH_PROXY", None):
+    print("Running app locally using cloud sql auth proxy...")
+    ALLOWED_HOSTS = ["*"]
+
+# Use deployed url in production
+#CLOUDRUN_SERVICE_URL = os.environ.get("CLOUDRUN_SERVICE_URL", default=None)
+else:
+    CLOUDRUN_SERVICE_URL = access_secret(project_id, 'CLOUDRUN_SERVICE_URL')
+    print("cloudrun:", CLOUDRUN_SERVICE_URL)
+    ALLOWED_HOSTS = [urlparse(CLOUDRUN_SERVICE_URL).netloc]
+    CSRF_TRUSTED_ORIGINS = [CLOUDRUN_SERVICE_URL]
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Application definition
 INSTALLED_APPS = [
@@ -171,10 +187,10 @@ USE_TZ = True
 # [START cloudrun_django_static_config]
 # Define static storage via django-storages[google]
 if os.getenv("USE_CLOUD_SQL_AUTH_PROXY", None):
-    print("found sql auth")
+    #print("Running app locally...")
     STATIC_URL = '/static/'
-    STATICFILES_DIRS = [BASE_DIR / 'static']
-    STATIC_ROOT = BASE_DIR / 'static'
+    #STATICFILES_DIRS = [BASE_DIR / 'static']
+    STATIC_ROOT = BASE_DIR / 'staticfiles' # use staticfiles to align with .gitignore
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 else:
