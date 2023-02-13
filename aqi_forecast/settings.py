@@ -17,10 +17,10 @@ from urllib.parse import urlparse
 from google.cloud import secretmanager
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-#BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+#BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Load environment
 load_dotenv()
@@ -246,11 +246,21 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # [START cloudrun_django_static_config]
 # Define static storage via django-storages[google]
-GS_BUCKET_NAME=access_secret(project_id, 'GS_BUCKET_NAME')
-STATIC_URL = "/static/"
-DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
-STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
-GS_DEFAULT_ACL = "publicRead"
+if os.getenv("USE_CLOUD_SQL_AUTH_PROXY", None):
+    print("found sql auth")
+    STATIC_URL = '/static/'
+    STATICFILES_DIRS = [BASE_DIR / 'static']
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+else:
+    GS_BUCKET_NAME=access_secret(project_id, 'GS_BUCKET_NAME')
+    STATIC_URL = "/static/"
+    DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+    STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+    #GS_DEFAULT_ACL = "publicRead"
+    GS_QUERYSTRING_AUTH = False
+    GS_DEFAULT_ACL = None
 
 # MEDIA_URL = "/media/"
 # MEDIAFILES_DIRS = [BASE_DIR / "media"]  # new
