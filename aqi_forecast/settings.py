@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 import os
 import io
+import re
 import environ
 from dotenv import load_dotenv
 from pathlib import Path
@@ -85,26 +86,22 @@ ALLOWED_HOSTS = ['*']'''
 #name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
 #payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
 
-def access_secret(project_id, secret_id, version):
+def access_secret(project_id, secret_str):
     """
-    Access a secret- API token, etc- stored in Secret Manager
+    Access secret in GCP Secrets Manager
     """
     client = secretmanager.SecretManagerServiceClient()
+    ***REMOVED***
+    name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
+    payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
 
-    # Build the resource name of the secret version
-    name = client.secret_version_path(project_id, secret_id, version)
+    # Extract value for secret
+    secret_val = re.search(f'(?<={secret_str}=).*(?=\\n)', payload)[0]
 
-    # Access the secret version
-    response = client.access_secret_version(name)
+    return secret_val
 
-    # Return the secret payload
-    payload = response.payload.data.decode('UTF-8')
-
-    return payload
-
-
-SECRET_KEY = access_secret(project_id, 'SECRET_KEY', 'latest')
-WEATHER_API_KEY = access_secret(project_id, 'WEATHER_API_KEY', 'latest')
+SECRET_KEY = access_secret(project_id, 'SECRET_KEY')
+WEATHER_API_KEY = access_secret(project_id, 'WEATHER_API_KEY')
 
 # [END gaestd_py_django_secret_config]
 
