@@ -23,8 +23,8 @@ entrypoint: gunicorn -b :$PORT aqi_forecast.wsgi:application
 env_variables:
   # This setting is used in settings.py to configure your ALLOWED_HOSTS
   # APPENGINE_URL: PROJECT_ID.uc.r.appspot.com
-  - SECRET_KEY=${_SECRET_KEY}
-  - WEATHER_API_KEY=${_WEATHER_API_KEY}
+  #- SECRET_KEY=_SECRET_KEY
+  #- WEATHER_API_KEY=_WEATHER_API_KEY
 
 handlers:
 # This configures Google App Engine to serve the files in the app's static
