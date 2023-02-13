@@ -83,12 +83,13 @@ client = secretmanager.SecretManagerServiceClient()
 ***REMOVED***
 ***REMOVED***
 name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
-payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
-
+#payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
+payload = client.access_secret_version(name=name).to_JSON()
+print("p here: ", payload)
 # [END gaestd_py_django_secret_config]
 
 #SECRET_KEY = env("SECRET_KEY")
-SECRET_KEY = payload.get("SECRET_KEY") #or payload.get("_SECRET_KEY")
+#SECRET_KEY = payload.get("SECRET_KEY") #or payload.get("_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 # Change this to "False" when you are ready for production
 #DEBUG = env("DEBUG")
