@@ -55,8 +55,14 @@ def access_secret(project_id, secret_str):
 
     return secret_val
 
+# Load Django secret key
 SECRET_KEY = access_secret(project_id, 'SECRET_KEY')
+
+# Load key for weather API
 WEATHER_API_KEY = access_secret(project_id, 'WEATHER_API_KEY')
+
+# Get name of buck with LSTM model
+LSTM_BUCKET = access_secret(project_id, 'LSTM_BUCKET')
 
 # Set DEBUG=False for production
 DEBUG = bool(int(os.environ.get('DEBUG', 0)))
