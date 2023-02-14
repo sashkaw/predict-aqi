@@ -17,11 +17,11 @@ contourpy==1.0.6
 cycler==0.11.0
 debugpy==1.6.4
 decorator==5.1.1
-Django==4.0.4; python_version >= '3.8'
-Django==3.2.14; python_version < '3.8'
-djangorestframework==3.14.0
+dj-database-url==1.2.0
+Django==4.0.4
 django-environ==0.9.0
-django-storages[google]==1.13
+django-storages==1.13
+djangorestframework==3.14.0
 entrypoints==0.4
 et-xmlfile==1.1.0
 executing==1.2.0
@@ -30,23 +30,29 @@ flatbuffers==23.1.4
 fonttools==4.38.0
 gast==0.4.0
 geopandas==0.12.2
+google-api-core==2.11.0
 google-auth==2.15.0
 google-auth-oauthlib==0.4.6
+google-cloud-core==2.3.2
 google-cloud-secret-manager==2.12.0
+google-cloud-storage==2.7.0
+google-crc32c==1.5.0
 google-pasta==0.2.0
+google-resumable-media==2.4.1
+googleapis-common-protos==1.58.0
+grpc-google-iam-v1==0.12.6
 grpcio==1.51.1
+grpcio-status==1.48.2
 gunicorn==20.1.0
 h5py==3.7.0
 idna==3.4
+importlib-metadata==6.0.0
 ipykernel==6.19.4
 ipython==8.7.0
-ipython
 jedi==0.18.2
 joblib==1.2.0
 jupyter_client==7.4.8
-jupyter_client
 jupyter_core==5.1.2
-jupyter_core
 keras==2.11.0
 Keras-Preprocessing==1.1.2
 kiwisolver==1.4.4
@@ -69,6 +75,7 @@ pickleshare==0.7.5
 Pillow==9.4.0
 platformdirs==2.6.2
 prompt-toolkit==3.0.36
+proto-plus==1.22.2
 protobuf==3.19.6
 psutil==5.9.4
 psycopg2-binary==2.9.4
@@ -112,3 +119,4 @@ wcwidth==0.2.5
 Werkzeug==2.2.2
 whitenoise==6.3.0
 wrapt==1.14.1
+zipp==3.13.0
