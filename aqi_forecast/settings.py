@@ -27,7 +27,6 @@ try:
 except google.auth.exceptions.DefaultCredentialsError:
     pass
 
-
 # Load environment
 load_dotenv()
 
