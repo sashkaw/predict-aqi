@@ -1,16 +1,16 @@
 steps:
-- name: 'python:3.8'
-  entrypoint: python3
-  args: ['-m', 'venv', 'venv']
-- name: 'python:3.8'
-  entrypoint: 'venv/bin/pip'
-  args: ['install', '-V', '-r', 'requirements.txt']
-- name: 'python:3.8'
-  entrypoint: 'venv/bin/python'
-  args: ['./manage.py', 'collectstatic', '--noinput']
-  env:
-    - 'SECRET_KEY=${_SECRET_KEY}'
-    - 'WEATHER_API_KEY=${_WEATHER_API_KEY}'
-- name: "gcr.io/cloud-builders/gcloud"
-  args: ["app", "deploy"]
-timeout: "1600s"
+  # Deploy
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+    - 'run'
+    - 'deploy'
+    - 'cloudrunservice'
+    - '--image'
+    - 'us-west2-docker.pkg.dev/$PROJECT_ID/aqi-repo/aqi-image:tag1'
+    - '--region'
+    - 'us-west2'
+    - '--platform' 
+    - 'managed'
+    - '--allow-unauthenticated'
+    - '--port'
+    - '8080'

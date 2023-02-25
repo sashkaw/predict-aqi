@@ -22,16 +22,20 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Attempt to load the Project ID into the environment, safely failing on error.
-try:
-    _, os.environ['GOOGLE_CLOUD_PROJECT'] = google.auth.default()
-except google.auth.exceptions.DefaultCredentialsError:
-    pass
+#try:
+#    #_, os.environ['GOOGLE_CLOUD_PROJECT'] = google.auth.default()
+#    credentials, _ = google.auth.default() # Returns none for second arg when running with local file
+#    gcp_project = credentials.quota_project_id
+#    print("auth_result:", gcp_project)
+#    os.environ['GOOGLE_CLOUD_PROJECT'] = gcp_project
+#except google.auth.exceptions.DefaultCredentialsError:
+#    pass
 
 # Load environment
 load_dotenv()
 
 # Pull secrets from Secret Manager
-project_id = os.environ.get('GOOGLE_CLOUD_PROJECT')
+project_id = os.environ.get('PROJECT_ID')
 
 def access_secret(project_id, secret_str):
     '''
@@ -63,6 +67,7 @@ WEATHER_API_KEY = access_secret(project_id, 'WEATHER_API_KEY')
 
 # Get name of buck with LSTM model
 LSTM_BUCKET = access_secret(project_id, 'LSTM_BUCKET')
+print("LSTM bucket: ", LSTM_BUCKET)
 
 # Set DEBUG=False for production
 DEBUG = bool(int(os.environ.get('DEBUG', 0)))
@@ -72,7 +77,7 @@ DEBUG = bool(int(os.environ.get('DEBUG', 0)))
 # to Cloud Run. This code takes the URL and converts it to both these settings formats.
 
 # Set allowed hosts to all for local development
-if os.getenv('USE_CLOUD_SQL_AUTH_PROXY', None):
+'''if os.getenv('USE_CLOUD_SQL_AUTH_PROXY', None):
     print('Running app locally using cloud sql auth proxy...')
     ALLOWED_HOSTS = ['*']
 
@@ -84,7 +89,10 @@ else:
     ALLOWED_HOSTS = [urlparse(CLOUDRUN_SERVICE_URL).netloc]
     CSRF_TRUSTED_ORIGINS = [CLOUDRUN_SERVICE_URL]
     SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')'''
+
+# For Docker
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
@@ -200,7 +208,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # [START cloudrun_django_static_config]
 # Define static storage via django-storages[google]
-if os.getenv('USE_CLOUD_SQL_AUTH_PROXY', None):
+'''if os.getenv('USE_CLOUD_SQL_AUTH_PROXY', None):
     #print('Running app locally...')
     STATIC_URL = '/static/'
     #STATICFILES_DIRS = [BASE_DIR / 'static']
@@ -213,7 +221,13 @@ else:
     DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
     STATICFILES_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
     GS_QUERYSTRING_AUTH = False
-    GS_DEFAULT_ACL = None
+    GS_DEFAULT_ACL = None'''
+
+# For Docker
+STATIC_URL = '/static/'
+#STATIC_ROOT = '/staticfiles'
+STATIC_ROOT = BASE_DIR / 'staticfiles' #for local
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
