@@ -1,3 +1,7 @@
+# gcloud
+gcloud-credentials.json
+.env_file
+
 # Static files from collectstatic
 staticfiles/
 
