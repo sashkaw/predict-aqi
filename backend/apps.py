@@ -48,7 +48,7 @@ class BackendConfig(AppConfig):
     name = 'backend'
     # Load LSTM model and data scaler once when app starts up
     ##MODEL_FILE = os.path.join(settings.MODELS, "aqi_LSTM.joblib")
-    SCALER_FILE = os.path.join(settings.MODELS, "aqi_scaler.joblib")
+    #SCALER_FILE = os.path.join(settings.MODELS, "aqi_scaler.joblib")
     #model = joblib.load(MODEL_FILE)
     #scaler = joblib.load(SCALER_FILE)
     #model = TestModel()
