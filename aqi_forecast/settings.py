@@ -35,21 +35,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv()
 
 # Pull secrets from Secret Manager
-project_id = os.environ.get('PROJECT_ID')
+PROJECT_ID = os.environ.get('PROJECT_ID')
 
-def access_secret(project_id, secret_str):
+def access_secret(secret_str):
     '''
     Desc: Access secret in GCP Secrets Manager
 
     Parameters:
-    project_id --- GCP project ID
     secret_str --- name of secret (Eg MY_SECRET_KEY)
 
     Returns:
     secret_val --- value of secret (including single quotes)
     '''
     client = secretmanager.SecretManagerServiceClient()
-    name = f'projects/{project_id}/secrets/django_settings/versions/latest'
+    name = f'projects/{PROJECT_ID}/secrets/django_settings/versions/latest'
     payload = client.access_secret_version(name=name).payload.data.decode('UTF-8')
 
     # Extract value for secret (either before newline or at end of values)
@@ -58,16 +57,16 @@ def access_secret(project_id, secret_str):
     return secret_val
 
 # Load Django secret key
-SECRET_KEY = access_secret(project_id, 'SECRET_KEY')
+SECRET_KEY = access_secret('SECRET_KEY')
 
 # Load key for weather API
-WEATHER_API_KEY = access_secret(project_id, 'WEATHER_API_KEY')
+WEATHER_API_KEY = access_secret('WEATHER_API_KEY')
 
 # Get name of bucket with LSTM model
-LSTM_BUCKET = access_secret(project_id, 'LSTM_BUCKET')
+LSTM_BUCKET = access_secret('LSTM_BUCKET')
 
 # Get name of bucket with scaler
-SCALER_BUCKET = access_secret(project_id, 'SCALER_BUCKET')
+SCALER_BUCKET = access_secret('SCALER_BUCKET')
 
 # Set DEBUG=False for production
 DEBUG = bool(int(os.environ.get('DEBUG', 0)))
@@ -77,22 +76,18 @@ DEBUG = bool(int(os.environ.get('DEBUG', 0)))
 # to Cloud Run. This code takes the URL and converts it to both these settings formats.
 
 # Set allowed hosts to all for local development
-'''if os.getenv('USE_CLOUD_SQL_AUTH_PROXY', None):
-    print('Running app locally using cloud sql auth proxy...')
-    ALLOWED_HOSTS = ['*']
 
 # Use deployed url in production
-#CLOUDRUN_SERVICE_URL = os.environ.get('CLOUDRUN_SERVICE_URL', default=None)
+RUN_LOCAL = os.environ.get("RUN_LOCAL", None)
+if(RUN_LOCAL):
+    # For Docker
+    ALLOWED_HOSTS = ['*']
 else:
-    CLOUDRUN_SERVICE_URL = access_secret(project_id, 'CLOUDRUN_SERVICE_URL')
-    print('cloudrun:', CLOUDRUN_SERVICE_URL)
+    CLOUDRUN_SERVICE_URL = access_secret('CLOUDRUN_SERVICE_URL')
     ALLOWED_HOSTS = [urlparse(CLOUDRUN_SERVICE_URL).netloc]
     CSRF_TRUSTED_ORIGINS = [CLOUDRUN_SERVICE_URL]
     SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')'''
-
-# For Docker
-ALLOWED_HOSTS = ['*']
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
 INSTALLED_APPS = [
@@ -154,7 +149,7 @@ DATABASES = {
 }
 
 # Get database url from Secret Manager
-#DATABASE_URL=access_secret(project_id, 'DATABASE_URL')
+#DATABASE_URL=access_secret('DATABASE_URL')
 
 # Parse connection string
 #parsed_db_url = dj_database_url.parse(
@@ -216,7 +211,7 @@ USE_TZ = True
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 else:
-    GS_BUCKET_NAME=access_secret(project_id, 'GS_BUCKET_NAME')
+    GS_BUCKET_NAME=access_secret('GS_BUCKET_NAME')
     STATIC_URL = '/static/'
     DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
     STATICFILES_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'

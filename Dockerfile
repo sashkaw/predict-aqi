@@ -2,6 +2,9 @@
 FROM python:3.9-slim
 
 # Get environment variables from build args
+ARG RUN_LOCAL_ARG
+ENV RUN_LOCAL $RUN_LOCAL_ARG
+
 ARG PROJECT_ID_ARG
 ENV PROJECT_ID $PROJECT_ID_ARG
 
@@ -14,14 +17,19 @@ ENV PORT=8080
 # Set working directory
 WORKDIR /app
 
+# Copy files
+COPY . .
+
+# Install NPM for React frontend
+#RUN apt-get update && apt-get install -y curl
+#RUN curl -s https://deb.nodesource.com/setup_16.x | bash
+#RUN apt-get -y install nodejs
+#RUN npm install --prefix frontend
+
 # Install requirements
-COPY requirements.txt requirements.txt
 #TODO - add venv
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
-
-# Copy files
-COPY . .
 
 ENV DEBUG=1
 
