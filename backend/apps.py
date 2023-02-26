@@ -29,34 +29,13 @@ def fetch_bucket(client, name, file):
 
         return contents
 
-#class TestModel():
-#    def __init__(self) -> None:
-#        super().__init__()
-#    def predict(self, X_scaled_reshaped, batch_size):
-#        return X_scaled_reshaped * 1.2
-
-class TestScaler():
-    def __init__(self) -> None:
-        super().__init__()
-    def transform(self, a):
-        return a * 0.5
-    def inverse_transform(self, a):
-        return a / 0.5
-
 class BackendConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'backend'
-    # Load LSTM model and data scaler once when app starts up
-    ##MODEL_FILE = os.path.join(settings.MODELS, "aqi_LSTM.joblib")
-    #SCALER_FILE = os.path.join(settings.MODELS, "aqi_scaler.joblib")
-    #model = joblib.load(MODEL_FILE)
-    #scaler = joblib.load(SCALER_FILE)
-    #model = TestModel()
-    scaler = TestScaler()
-
-    # Load ML model from storage bucket
+    # Load ML model and scaler from storage bucket on app startup
     storage_client = storage.Client()
     model = fetch_bucket(storage_client, settings.LSTM_BUCKET, 'aqi_LSTM.joblib')
+    scaler = fetch_bucket(storage_client, settings.SCALER_BUCKET, 'aqi_scaler.joblib')
 
     
 

@@ -49,8 +49,6 @@ def access_secret(project_id, secret_str):
     secret_val --- value of secret (including single quotes)
     '''
     client = secretmanager.SecretManagerServiceClient()
-    #settings_name = os.environ.get('SETTINGS_NAME', "django_settings")
-    #name = f'projects/{project_id}/secrets/{settings_name}/versions/latest'
     name = f'projects/{project_id}/secrets/django_settings/versions/latest'
     payload = client.access_secret_version(name=name).payload.data.decode('UTF-8')
 
@@ -65,9 +63,11 @@ SECRET_KEY = access_secret(project_id, 'SECRET_KEY')
 # Load key for weather API
 WEATHER_API_KEY = access_secret(project_id, 'WEATHER_API_KEY')
 
-# Get name of buck with LSTM model
+# Get name of bucket with LSTM model
 LSTM_BUCKET = access_secret(project_id, 'LSTM_BUCKET')
-print("LSTM bucket: ", LSTM_BUCKET)
+
+# Get name of bucket with scaler
+SCALER_BUCKET = access_secret(project_id, 'SCALER_BUCKET')
 
 # Set DEBUG=False for production
 DEBUG = bool(int(os.environ.get('DEBUG', 0)))
