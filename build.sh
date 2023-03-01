@@ -6,16 +6,16 @@ set -o errexit
 #pip install -r requirements.txt
 
 # Run React tests
-#npm run test --prefix frontend
+npm run test --prefix frontend
 # Build frontend
-#npm run build --prefix frontend  
+npm run build --prefix frontend  
 
 # Run Django migrations
-#python manage.py migrate
+python manage.py migrate
 # Run Django tests
-#python manage.py test
+python manage.py test
 # Collect static files for production
-#python manage.py collectstatic --no-input
+python manage.py collectstatic --no-input
 
 # Run app
 #python manage.py runserver 0.0.0.0:8000

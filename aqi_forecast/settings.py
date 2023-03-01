@@ -21,16 +21,6 @@ import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Attempt to load the Project ID into the environment, safely failing on error.
-#try:
-#    #_, os.environ['GOOGLE_CLOUD_PROJECT'] = google.auth.default()
-#    credentials, _ = google.auth.default() # Returns none for second arg when running with local file
-#    gcp_project = credentials.quota_project_id
-#    print("auth_result:", gcp_project)
-#    os.environ['GOOGLE_CLOUD_PROJECT'] = gcp_project
-#except google.auth.exceptions.DefaultCredentialsError:
-#    pass
-
 # Load environment
 load_dotenv()
 

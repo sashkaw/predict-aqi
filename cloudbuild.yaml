@@ -14,3 +14,5 @@ steps:
     - '--allow-unauthenticated'
     - '--port'
     - '8080'
+    - '--memory'
+    - '1G'

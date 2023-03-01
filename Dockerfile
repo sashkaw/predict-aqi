@@ -21,9 +21,9 @@ WORKDIR /app
 COPY . .
 
 # Install NPM for React frontend
-#RUN apt-get update && apt-get install -y curl
-#RUN curl -s https://deb.nodesource.com/setup_16.x | bash
-#RUN apt-get -y install nodejs
+RUN apt-get update && apt-get install -y curl
+RUN curl -s https://deb.nodesource.com/setup_16.x | bash
+RUN apt-get -y install nodejs
 #RUN npm install --prefix frontend
 
 # Install requirements
